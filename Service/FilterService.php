@@ -119,7 +119,7 @@ class FilterService
      */
     public function getUrlOfFilteredImage($path, $filter, $resolver = null, bool $webpSupported = false)
     {
-        foreach ($this->buildFilterPathContainers($path) as $filterPathContainer) {
+        foreach ($this->buildFilterPathContainers($path, '', [], $this->webpGenerate && $webpSupported) as $filterPathContainer) {
             $this->warmUpCacheFilterPathContainer($filterPathContainer, $filter, $resolver);
         }
 
@@ -162,12 +162,14 @@ class FilterService
      *
      * @return FilterPathContainer[]
      */
-    private function buildFilterPathContainers(string $source, string $target = '', array $options = []): array
+    private function buildFilterPathContainers(string $source, string $target = '', array $options = [], $webpImage = false): array
     {
         $basePathContainer = new FilterPathContainer($source, $target, $options);
         $filterPathContainers = [$basePathContainer];
 
-        if ($this->webpGenerate) {
+        if ($webpImage) {
+            $filterPathContainers = [$basePathContainer->createWebp($this->webpOptions)];
+        } else if ($this->webpGenerate) {
             $filterPathContainers[] = $basePathContainer->createWebp($this->webpOptions);
         }
 
